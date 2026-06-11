@@ -210,7 +210,13 @@ div[role="menuitem"] {
 footer {
     visibility: hidden;
 }
+/* Remove top spacing */
 
+.block-container {
+
+    padding-top: 0rem !important;
+
+}
 
 /* Remove top spacing */
 
