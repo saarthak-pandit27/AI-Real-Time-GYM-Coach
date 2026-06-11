@@ -256,8 +256,3 @@ footer {
     border-radius: 25px !important;
 }
 
-/* Hide top-right buttons */
-
-[data-testid="stToolbar"] {
-    display: none !important;
-}
