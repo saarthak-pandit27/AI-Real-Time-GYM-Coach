@@ -211,7 +211,7 @@ footer {
     visibility: hidden;
 }
 header {
-    visibility: hidden;
+    visibility: hidden !important;
 }
 
 /* Remove top spacing */
