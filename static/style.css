@@ -211,9 +211,7 @@ footer {
     visibility: hidden;
 }
 
-[data-testid="stToolbar"] {
-    display: none !important;
-}
+
 /* Remove top spacing */
 
 .block-container {
