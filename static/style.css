@@ -177,15 +177,15 @@ div[role="menuitem"] {
 ========================================================= */
 
 .stForm {
-  margin-top: 2rem !important;
+  margin-top: 1rem !important;
   padding: 1.5rem 1rem !important;
-  background: rgba(24,29,42,0.75) !important;
-  backdrop-filter: blur(15px);
+  background: rgba(15,23,42,0.85) !important;
+  backdrop-filter: blur(20px);
   color: #fff;
   border-radius: 30px !important;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
 }
-
 .stApp {
     background-image: url("https://images.unsplash.com/photo-1534438327276-14e5300c3a48");
     background-size: cover;
@@ -214,9 +214,8 @@ footer {
 /* Reduce top spacing */
 
 .block-container {
-    padding-top: 0.5rem !important;
+    padding-top: 0.2rem !important;
 }
-
 
 
 /* Premium Login Input */
@@ -241,11 +240,11 @@ footer {
 /* Force Rounded Streamlit Input Container */
 
 [data-testid="stTextInput"] {
-    border-radius: 25px !important;
+    border-radius: 20px !important;
 }
 
 [data-testid="stTextInput"] > div {
-    border-radius: 25px !important;
+    border-radius: 20px !important;
 }
 
 [data-testid="stTextInput"] > div > div {
@@ -257,8 +256,8 @@ footer {
     border-radius: 25px !important;
 }
 
-/* Reduce Streamlit Header Height */
+/* Hide Streamlit red decoration */
 
-[data-testid="stHeader"] {
-    height: 2rem !important;
+[data-testid="stDecoration"] {
+    display: none !important;
 }
