@@ -267,3 +267,11 @@ footer {
 [data-testid="stDecoration"] {
     display: none !important;
 }
+/* Make Number Input +/- Buttons Smaller */
+
+[data-testid="stNumberInputStepUp"],
+[data-testid="stNumberInputStepDown"] {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
+}
