@@ -39,10 +39,10 @@ button,
 .MuiBox-root button {
   background-color: #181D2A !important;
   border: 1px solid rgba(255,255,255,0.12) !important;
-  border-radius: 50px !important;
-  height: 58px !important;
+  border-radius: 12px !important;
+  height: 55px !important;
   font-family: 'AdobeClean', sans-serif !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   letter-spacing: 1px !important;
 }
 .stButton button:hover {
