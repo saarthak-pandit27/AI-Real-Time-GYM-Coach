@@ -258,3 +258,9 @@ header {
 .stTextInput input {
     border-radius: 25px !important;
 }
+
+/* Hide Streamlit top-right toolbar */
+
+[data-testid="stAppToolbar"] {
+    display: none !important;
+}
