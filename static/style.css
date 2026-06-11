@@ -210,19 +210,14 @@ div[role="menuitem"] {
 footer {
     visibility: hidden;
 }
-/* Remove top spacing */
+
+/* Reduce top spacing */
 
 .block-container {
-
-    padding-top: 0rem !important;
-
+    padding-top: 0.5rem !important;
 }
 
-/* Remove top spacing */
 
-.block-container {
-    padding-top: 0rem !important;
-}
 
 /* Premium Login Input */
 
@@ -262,3 +257,8 @@ footer {
     border-radius: 25px !important;
 }
 
+/* Reduce Streamlit Header Height */
+
+[data-testid="stHeader"] {
+    height: 2rem !important;
+}
