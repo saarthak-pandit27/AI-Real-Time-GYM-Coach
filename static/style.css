@@ -38,13 +38,19 @@ button,
 .stDownloadButton button,
 .MuiBox-root button {
   background-color: #181D2A !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 25px !important;
-  height: 55px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 50px !important;
+  height: 58px !important;
   font-family: 'AdobeClean', sans-serif !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   letter-spacing: 1px !important;
 }
+.stButton button:hover {
+    transform: translateY(-2px);
+    transition: all 0.25s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+}
+
 
 /* =========================================================
    INPUTS & TEXT ELEMENTS
