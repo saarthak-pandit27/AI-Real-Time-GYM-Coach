@@ -211,10 +211,9 @@ footer {
     visibility: hidden;
 }
 
-header {
-    visibility: visible !important;
+[data-testid="stToolbar"] {
+    display: none !important;
 }
-
 /* Remove top spacing */
 
 .block-container {
@@ -259,8 +258,3 @@ header {
     border-radius: 25px !important;
 }
 
-/* Hide Streamlit top-right toolbar */
-
-[data-testid="stAppToolbar"] {
-    display: none !important;
-}
