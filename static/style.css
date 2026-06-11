@@ -210,7 +210,9 @@ div[role="menuitem"] {
 footer {
     visibility: hidden;
 }
-
+header {
+    visibility: hidden;
+}
 
 /* Remove top spacing */
 
