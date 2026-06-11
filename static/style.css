@@ -210,9 +210,7 @@ div[role="menuitem"] {
 footer {
     visibility: hidden;
 }
-header {
-    visibility: hidden !important;
-}
+
 
 /* Remove top spacing */
 
@@ -258,3 +256,8 @@ header {
     border-radius: 25px !important;
 }
 
+/* Hide top-right buttons */
+
+[data-testid="stToolbar"] {
+    display: none !important;
+}
