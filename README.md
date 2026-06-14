@@ -2,6 +2,8 @@
 
 AI Real-Time Gym Coach is an intelligent fitness assistant that uses computer vision, pose estimation, and AI voice coaching to monitor workouts in real time.
 
+Real-time AI-powered fitness coach using MediaPipe, Computer Vision, Streamlit and Voice AI.
+
 ## Features
 
 - Real-time pose detection using MediaPipe
