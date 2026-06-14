@@ -11,7 +11,10 @@ from services.persistence.exercise_repository import init_db
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 from services.vision.exercise_video_processor import VideoProcessorClass
 from services.tracking.metrics import sync_metrics_update
-from services.persistence.exercise_repository import get_users_exercises
+from services.persistence.exercise_repository import (
+    get_users_exercises,
+    add_exercise
+)
 from groq import Groq
 from services.coaching.llm import LLMCoach
 from services.coaching.tts import TextToSpeech
@@ -114,6 +117,21 @@ def main():
 
             if end_session_button:
                 st.session_state.workout_started = False
+                
+                user_id = st.session_state.get("user_id")
+
+                if user_id:
+                    add_exercise(
+                        user_id=user_id,
+                        exercise_name=exercise,
+                        reps=st.session_state.get("reps", 0),
+                        sets=st.session_state.get("sets_completed", 0),
+                        time=int(
+                            time.time()
+                            - st.session_state.get("set_cycle_started_at", time.time())
+                        )
+                    )
+                                
                 
                 if st.session_state.voice_pipeline:
                     result = st.session_state.voice_pipeline.process_event(

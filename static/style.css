@@ -275,3 +275,10 @@ footer {
     height: 32px !important;
     border-radius: 8px !important;
 }
+
+/* Keep sidebar toggle working */
+
+[data-testid="stHeader"] {
+    background: transparent !important;
+}
+
