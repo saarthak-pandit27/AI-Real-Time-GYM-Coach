@@ -1,54 +1,112 @@
-# AI Real-Time Gym Coach
+# 🏋️‍♂️ AI Real-Time GYM Coach
 
-AI Real-Time Gym Coach is an intelligent fitness assistant that uses computer vision, pose estimation, and AI voice coaching to monitor workouts in real time.
+> **Next-Gen Computer Vision & Proactive AI Voice Guidance Engine**  
+> Train Smarter with Real-Time Joint Tracking, PBKDF2 Password Security, and Full-Screen Cyberpunk HUD Telemetry.
 
-Real-time AI-powered fitness coach using MediaPipe, Computer Vision, Streamlit and Voice AI.
+---
 
-## Features
+## 🌟 Key Features
 
-- Real-time pose detection using MediaPipe
-- Automatic repetition counting
-- Exercise form analysis
-- AI-generated voice coaching using Groq LLM
-- Workout tracking and history
-- Support for:
-  - Squats
-  - Push-ups
-  - Biceps Curls
-  - Shoulder Press
-  - Lunges
+- **🛡️ Secure User Authentication**:
+  - Encrypted account registration & login using **PBKDF2 HMAC SHA-256** with unique 16-byte random salts.
+  - SQLite persistence storing password hashes and user workout history safely.
 
-## Tech Stack
+- **👁️ Real-Time Computer Vision Pose Estimation**:
+  - 30+ FPS joint tracking powered by **MediaPipe** and **OpenCV**.
+  - Precise biomechanics & angle calculations for **5 key exercises**:
+    - 🏋️ **Squats**: Knee angle, back inclination, depth checks.
+    - 🧘 **Push-ups**: Elbow angle, body alignment, sagging/piked hip detection.
+    - 💪 **Biceps Curls**: Elbow drift detection, torso swing alerts.
+    - 🏋️‍♂️ **Shoulder Press**: Arm extension, excessive back arch tracking.
+    - 🏃 **Lunges**: Front knee angle, torso balance posture checks.
 
-- Python
-- Streamlit
-- MediaPipe
-- OpenCV
-- Groq API
-- SQLite
-- gTTS
+- **🎙️ Crash-Proof AI Voice Coaching**:
+  - Dual-layer voice synthesis engine using **Groq Llama 3.3 70B** LLM + **gTTS** (Google Text-to-Speech).
+  - Automatic fallback to high-energy rule-based AI prompts + **Browser Web Speech API** (`window.speechSynthesis`), ensuring voice guidance **never crashes** even when offline or without an API key.
 
-## Installation
+- **✨ Futuristic Sci-Fi HUD Interface**:
+  - Full-screen edge-to-edge dark theme (`layout="wide"`).
+  - Ambient laser scanline animations, glassmorphism telemetry panels, and glowing audio feedback visualizers.
 
-1. Clone the repository
-2. Create a virtual environment
-3. Install requirements
-4. Add your GROQ_API_KEY to a local .env file
-5. Run:
+- **📈 Workout History & Telemetry**:
+  - Automatic session logging (Reps, Sets, Active Training Seconds).
+  - Aggregate workout dashboard tracking lifetime reps, sets, and active workout time.
 
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend & App Framework**: Streamlit (Full-Screen Layout, WebRTC Streamer)
+- **Computer Vision & Pose Tracking**: MediaPipe Pose, OpenCV
+- **AI LLM & Speech**: Groq API (Llama 3.3 70B Versatile), gTTS, Web Speech API Fallback
+- **Database & Security**: SQLite3, `hashlib` PBKDF2 HMAC SHA-256
+- **Styling**: Custom CSS3, Glassmorphism, Google Fonts (`Outfit`, `Space Grotesk`, `Inter`)
+
+---
+
+## ⚡ Quick Start & Installation
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/saarthak-pandit27/AI-Real-Time-GYM-Coach.git
+cd AI-Real-Time-GYM-Coach
+```
+
+### 2. Set Up Virtual Environment & Install Dependencies
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment Variables (Optional for Groq LLM)
+Create a `.env` file in the root directory:
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+> *Note: If no API key is provided, the application automatically uses its built-in fail-safe rule-based AI voice engine.*
+
+### 4. Launch the AI Coach
+```bash
 streamlit run main.py
+```
 
-## Future Improvements
+Open your browser at **`http://localhost:8501`**.
 
-- Multi-user accounts
-- Advanced workout analytics
-- More exercise support
-- Personalized workout plans
-- Nutrition recommendations
+---
 
-## Author
+## 📁 Repository Architecture
 
-Saarthak Pandit
+```
+AI-Real-Time-GYM-Coach/
+├── main.py                          # Application entry point & full-screen UI layout
+├── requirements.txt                 # Dependencies
+├── data.db                          # SQLite database (auto-created)
+├── static/
+│   ├── style.css                    # Futuristic Sci-Fi HUD Theme & laser animations
+│   └── AdobeClean.otf               # Custom font asset
+├── services/
+│   ├── auth/
+│   │   ├── security.py              # PBKDF2 password hashing & verification
+│   │   └── login_wall.py            # Glassmorphic Sign In & Create Account wall
+│   ├── coaching/
+│   │   ├── llm.py                   # Groq LLM coach with fallback feedback
+│   │   ├── tts.py                   # Text-To-Speech engine
+│   │   └── voice_pipeline.py        # Voice pipeline & Web Speech JS fallback
+│   ├── persistence/
+│   │   └── exercise_repository.py   # SQLite CRUD operations
+│   ├── tracking/
+│   │   └── metrics.py               # Live rep/set counter & telemetry sync
+│   └── vision/
+│       └── exercise_video_processor.py # MediaPipe pose analysis processor
+└── detectors/                       # Exercise angle calculations
+```
 
-B.Tech CSE (AI & ML)
-Amity University Mohali
+---
+
+## 👤 Author
+
+**Saarthak Pandit**  
+B.Tech CSE (AI & ML)  
+Amity University Mohali  
+🔗 GitHub: [@saarthak-pandit27](https://github.com/saarthak-pandit27)
