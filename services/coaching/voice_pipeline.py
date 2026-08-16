@@ -1,5 +1,10 @@
 import time
 import streamlit as st
+import streamlit.components.v1 as components
+import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class VoicePipeline:
@@ -47,7 +52,6 @@ class VoicePipeline:
 
         elif exercise == "Shoulder Press":
             back_arch = metrics.get("back_arch_status", "")
-            extension = metrics.get("extension_status", "")
             
             if back_arch == "Excessive Arch":
                 return "The user is arching their lower back excessively during the press."
@@ -64,31 +68,60 @@ class VoicePipeline:
         return None
 
     def process_event(self, event, exercise, metrics):
-        issue = self._find_form_issue(exercise, metrics)
+        try:
+            issue = self._find_form_issue(exercise, metrics)
+            now = time.time()
+            is_major_issue = event in ["workout_started", "set_completed", "workout_completed"]
 
-        now = time.time()
+            if not is_major_issue:
+                if not issue:
+                    return None
+                
+                if now - self.last_spoken_at < 5:
+                    return None
+                
+            text = self.llm.give_feedback(event, issue) if self.llm else "Let's push hard and keep solid posture!"
+            voice = self.tts.speak(text) if self.tts else None
 
-        is_major_issue = event in ["workout_started", "set_completed", "workout_completed"]
+            self.last_spoken_at = now
+            return voice, text
+        except Exception as e:
+            logger.error(f"Error processing voice event {event}: {e}")
+            fallback_text = f"Workout {event.replace('_', ' ')}! Stay focused and keep solid form."
+            return None, fallback_text
 
-        if not is_major_issue:
-            if not issue:
-                return None
-            
-            if now - self.last_spoken_at < 5:
-                return None
-            
-        text = self.llm.give_feedback(event, issue)
-        voice = self.tts.speak(text)
 
-        self.last_spoken_at = now
+def autoplay_audio(audio_bytes, text_fallback=None):
+    """Play audio bytes or use Web Speech API fallback."""
+    if audio_bytes:
+        try:
+            st.markdown("<style>[data-testid='stAudio'] {display: none;}</style>", unsafe_allow_html=True)
+            st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+            return
+        except Exception as e:
+            logger.warning(f"st.audio playback failed: {e}")
 
-        return voice, text
-    
-
-def autoplay_audio(audio_bytes):
-    if not audio_bytes:
-        return
-    
-    st.markdown("<style>[data-testid='stAudio'] {display: none;}</style>", unsafe_allow_html=True)
-    
-    st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+    # Fallback to browser Web Speech API JS if audio_bytes is absent or failed
+    if text_fallback:
+        escaped_text = json.dumps(text_fallback)
+        components.html(
+            f"""
+            <script>
+            (function() {{
+                try {{
+                    if ('speechSynthesis' in window) {{
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance({escaped_text});
+                        utterance.rate = 1.0;
+                        utterance.pitch = 1.0;
+                        utterance.volume = 1.0;
+                        window.speechSynthesis.speak(utterance);
+                    }}
+                }} catch (err) {{
+                    console.warn('Web speech synthesis failed:', err);
+                }}
+            }})();
+            </script>
+            """,
+            height=0,
+        )

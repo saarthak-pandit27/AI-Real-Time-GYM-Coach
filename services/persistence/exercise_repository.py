@@ -1,8 +1,10 @@
 import sqlite3
 import streamlit as st
 from pathlib import Path
+from services.auth.security import generate_salt, hash_password, verify_password
 
 _DB_PATH = str(Path(__file__).parent.parent.parent / "data.db")
+
 
 
 @st.cache_resource
@@ -19,12 +21,22 @@ def init_db() -> None:
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
-                id         INTEGER PRIMARY KEY AUTOINCREMENT,
-                username   TEXT UNIQUE NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                username      TEXT UNIQUE NOT NULL,
+                password_hash TEXT,
+                salt          TEXT,
+                created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
         )
+        # Ensure password_hash and salt columns exist if DB was created previously
+        cursor = conn.execute("PRAGMA table_info(users)")
+        columns = [column[1] for column in cursor.fetchall()]
+        if "password_hash" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
+        if "salt" not in columns:
+            conn.execute("ALTER TABLE users ADD COLUMN salt TEXT")
+
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS exercises (
@@ -48,22 +60,71 @@ def get_user(username: str) -> sqlite3.Row:
     ).fetchone()
 
 
-def create_user(username: str) -> sqlite3.Row:
-    conn = _get_connection()
+def register_user(username: str, password: str):
+    """Register a new user with hashed password. Returns (user, None) or (None, error_str)."""
+    username = username.strip().lower()
+    if not username:
+        return None, "Username cannot be empty."
+    if len(password) < 6:
+        return None, "Password must be at least 6 characters long."
     
+    existing = get_user(username)
+    if existing is not None:
+        return None, "Username is already taken. Please choose another or sign in."
+    
+    salt = generate_salt()
+    pw_hash = hash_password(password, salt)
+    
+    conn = _get_connection()
     with conn:
         conn.execute(
-            "INSERT INTO users (username) VALUES (?)", (username,)
+            "INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?)",
+            (username, pw_hash, salt)
         )
 
-    return get_user(username) 
+    user = get_user(username)
+    return user, None
+
+
+def authenticate_user(username: str, password: str):
+    """Authenticate a user. Returns (user, None) or (None, error_str)."""
+    username = username.strip().lower()
+    if not username or not password:
+        return None, "Please enter both username and password."
+    
+    user = get_user(username)
+    if user is None:
+        return None, "Account not found. Please check your username or register a new account."
+    
+    # Handle legacy accounts created without a password
+    if not user['password_hash'] or not user['salt']:
+        salt = generate_salt()
+        pw_hash = hash_password(password, salt)
+        conn = _get_connection()
+        with conn:
+            conn.execute(
+                "UPDATE users SET password_hash = ?, salt = ? WHERE id = ?",
+                (pw_hash, salt, user['id'])
+            )
+        return user, None
+
+    if verify_password(password, user['salt'], user['password_hash']):
+        return user, None
+    else:
+        return None, "Invalid password. Please try again."
 
 
 def get_or_create_user(username: str) -> sqlite3.Row:
     user = get_user(username)
 
     if user is None:
-        user = create_user(username)
+        salt = generate_salt()
+        conn = _get_connection()
+        with conn:
+            conn.execute(
+                "INSERT INTO users (username, salt) VALUES (?, ?)", (username, salt)
+            )
+        user = get_user(username)
     
     return user
 
@@ -74,7 +135,7 @@ def add_exercise(user_id, exercise_name, reps, sets, time):
     with conn:
         existing = conn.execute("""
             SELECT * FROM exercises 
-            WHERE user_id = ? AND exercise_name = ? AND Date('created_at') = Date('now')
+            WHERE user_id = ? AND exercise_name = ? AND Date(created_at) = Date('now')
         """, (user_id, exercise_name)).fetchone()
 
         if existing:

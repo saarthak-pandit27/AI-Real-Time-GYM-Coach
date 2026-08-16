@@ -3,3 +3,5 @@ data.db
 .DS_Store
 .venv/
 __pycache__/
+**/__pycache__/
+*.pyc
