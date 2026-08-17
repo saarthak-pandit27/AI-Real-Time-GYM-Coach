@@ -1,8 +1,7 @@
 import os
 import streamlit as st
-import streamlit.components.v1 as components
 import base64
- 
+
 
 def load_css(file_path):
     if os.path.exists(file_path):
@@ -41,9 +40,9 @@ def inject_webrtc_styles():
     with open(font_path, "rb") as font_file:
         encoded_font = base64.b64encode(font_file.read()).decode()
 
-    components.html(
-        f"""
-        <script>
+    html_code = f"""
+        <iframe srcdoc="
+        &lt;script&gt;
         (function patchWebRTCStyles() {{
             function injectIntoIframe(iframe) {{
                 try {{
@@ -90,7 +89,6 @@ def inject_webrtc_styles():
 
             findAndPatch();
         }})();
-        </script>
-        """,
-        height=0,
-    )
+        &lt;/script&gt;" style="display:none; width:0; height:0; border:none;"></iframe>
+    """
+    st.markdown(html_code, unsafe_allow_html=True)

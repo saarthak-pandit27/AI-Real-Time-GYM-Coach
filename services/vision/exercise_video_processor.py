@@ -42,7 +42,10 @@ class VideoProcessorClass(VideoProcessorBase):
                 with open(model_path, "rb") as f:
                     model_bytes = f.read()
 
-                base_option = python.BaseOptions(model_asset_buffer=model_bytes)
+                base_option = python.BaseOptions(
+                    model_asset_buffer=model_bytes,
+                    delegate=python.BaseOptions.Delegate.CPU
+                )
                 options = vision.PoseLandmarkerOptions(
                     base_options=base_option,
                     running_mode=vision.RunningMode.VIDEO,

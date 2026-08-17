@@ -91,8 +91,8 @@ def main():
 
         if not workout_started:
             plan_exercise = st.selectbox("Select Exercise", options=EXERCISE_OPTIONS, key="plan_exercise")
-            plan_sets = st.number_input("Sets", min_value=1, max_value=50, value=3, key="plan_sets", step=1)
-            plan_reps = st.number_input("Reps per Set", min_value=1, max_value=100, value=10, key="plan_reps", step=1)
+            plan_sets = st.number_input("Sets", min_value=1, max_value=50, key="plan_sets", step=1)
+            plan_reps = st.number_input("Reps per Set", min_value=1, max_value=100, key="plan_reps", step=1)
 
             st.markdown("<br>", unsafe_allow_html=True)
             start_session_button = st.button("🚀 START WORKOUT", use_container_width=True, key="start_session_button")

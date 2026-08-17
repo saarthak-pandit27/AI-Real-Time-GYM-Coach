@@ -40,20 +40,31 @@ class LLMCoach:
                 {"role": "user", "content": prompt}
             ]
 
-            try:
-                response = self.client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=messages,
-                    temperature=0.4,
-                    timeout=5.0
-                )
-            except Exception:
-                response = self.client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
-                    messages=messages,
-                    temperature=0.4,
-                    timeout=5.0
-                )
+            candidate_models = [
+                "openai/gpt-oss-20b",
+                "llama3-70b-8192",
+                "llama3-8b-8192",
+                "mixtral-8x7b-32768",
+                "llama-3.3-70b-versatile"
+            ]
+
+            response = None
+            last_err = None
+            for model_name in candidate_models:
+                try:
+                    response = self.client.chat.completions.create(
+                        model=model_name,
+                        messages=messages,
+                        temperature=0.4,
+                        timeout=5.0
+                    )
+                    if response:
+                        break
+                except Exception as err:
+                    last_err = err
+
+            if not response:
+                raise last_err or Exception("All candidate Groq models failed")
 
             text = response.choices[0].message.content.strip()
             self.history.append({"role": "assistant", "content": text})
