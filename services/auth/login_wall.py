@@ -15,6 +15,45 @@ def render_login_wall():
     st.markdown(
         clean_html("""
         <style>
+        .stApp {
+            background-image: 
+                linear-gradient(180deg, rgba(5, 7, 12, 0.88) 0%, rgba(10, 15, 29, 0.94) 100%),
+                url("https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=2000&auto=format&fit=crop") !important;
+            background-size: cover !important;
+            background-position: center !important;
+            background-attachment: fixed !important;
+        }
+
+        .stApp::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0, 229, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .stApp::after {
+            content: "";
+            position: fixed;
+            top: -100px;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, transparent, rgba(0, 255, 136, 0.06), transparent);
+            pointer-events: none;
+            z-index: 1;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { top: -100px; }
+            100% { top: 100%; }
+        }
+
         .login-wrapper {
             padding: 10px 0;
             width: 100%;
