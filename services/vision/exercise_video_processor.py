@@ -197,44 +197,49 @@ class VideoProcessorClass(VideoProcessorBase):
         )
 
     def recv(self, frame):
-        image = np.asarray(
-            cv2.flip(frame.to_ndarray(format="bgr24"), 1),
-            dtype=np.uint8
-        )
+        try:
+            image = np.asarray(
+                cv2.flip(frame.to_ndarray(format="bgr24"), 1),
+                dtype=np.uint8
+            )
 
-        mp_image = mp.Image(
-            image_format=mp.ImageFormat.SRGB,
-            data=cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        )
+            rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(
+                image_format=mp.ImageFormat.SRGB,
+                data=np.ascontiguousarray(rgb_image)
+            )
 
-        self._frame_timestamps_ms += 30
-        result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms) if self._landmarker else None
+            self._frame_timestamps_ms += 33
+            result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms) if self._landmarker else None
 
-        if result and result.pose_landmarks:
-            landmarks = result.pose_landmarks[0]
+            if result and result.pose_landmarks and len(result.pose_landmarks) > 0:
+                landmarks = result.pose_landmarks[0]
 
-            self._draw_skeleton(image, landmarks)
+                self._draw_skeleton(image, landmarks)
 
-            ex_type = self.get_exercise()
+                ex_type = self.get_exercise()
+                detector = self._detectors.get(ex_type)
 
-            detector = self._detectors.get(ex_type)
+                if detector:
+                    metrics = detector.process(landmarks)
+                    metrics["pose_detected"] = True
+                    self._draw_overlays(image, metrics, ex_type)
+                    self.set_latest_metrics(metrics)
+            else:
+                self._draw_no_pose_warnings(image)
+                with self._lock:
+                    if self._latest_metrics is not None:
+                        self._latest_metrics["pose_detected"] = False
+                    else:
+                        self._latest_metrics = {"pose_detected": False}
 
-            if detector:
-                metrics = detector.process(landmarks)
-
-                metrics["pose_detected"] = True
-
-                self._draw_overlays(image, metrics, ex_type)
-
-                self.set_latest_metrics(metrics)
-        else:
-            self._draw_no_pose_warnings(image)
-            
-            with self._lock:
-                if self._latest_metrics is not None:
-                    self._latest_metrics["pose_detected"] = False
-                else:
-                    self._latest_metrics = {"pose_detected": False}
-
-        return av.VideoFrame.from_ndarray(image, format="bgr24")
+            return av.VideoFrame.from_ndarray(image, format="bgr24")
+        except Exception as e:
+            print(f"[ERROR in VideoProcessor recv]: {e}")
+            # Fallback: return flipped raw frame safely without crashing the WebRTC pipeline
+            try:
+                fallback_img = cv2.flip(frame.to_ndarray(format="bgr24"), 1)
+                return av.VideoFrame.from_ndarray(fallback_img, format="bgr24")
+            except Exception:
+                return frame
     
