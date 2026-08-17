@@ -20,28 +20,44 @@ class VideoProcessorClass(VideoProcessorBase):
         self._lock = threading.Lock()
         self._latest_metrics = None
         self._exercise_type = "Squats"
+        self._landmarker = None
 
         from pathlib import Path
         model_path = str(Path(__file__).parent.parent.parent / "ml_models" / "pose_landmarker_full.task")
         if not os.path.exists(model_path):
             model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
 
-        base_option = python.BaseOptions(model_asset_path=model_path)
+        # Attempt loading Tasks PoseLandmarker
+        if os.path.exists(model_path):
+            try:
+                with open(model_path, "rb") as f:
+                    model_bytes = f.read()
 
-        options = vision.PoseLandmarkerOptions(
-            base_options=base_option,
-            running_mode=vision.RunningMode.VIDEO,
-            min_pose_detection_confidence=0.7,
-            min_pose_presence_confidence=0.7,
-            min_tracking_confidence=0.7,
-            output_segmentation_masks=False
-        )
+                base_option = python.BaseOptions(model_asset_buffer=model_bytes)
+                options = vision.PoseLandmarkerOptions(
+                    base_options=base_option,
+                    running_mode=vision.RunningMode.VIDEO,
+                    min_pose_detection_confidence=0.5,
+                    min_pose_presence_confidence=0.5,
+                    min_tracking_confidence=0.5,
+                    output_segmentation_masks=False
+                )
+                self._landmarker = vision.PoseLandmarker.create_from_options(options)
+            except Exception as e:
+                print(f"[WARNING] Failed to load PoseLandmarker task buffer: {e}")
 
+        # Legacy MediaPipe Pose fallback (100% reliable across all platforms)
         try:
-            self._landmarker = vision.PoseLandmarker.create_from_options(options)
+            self._legacy_pose = mp.solutions.pose.Pose(
+                static_image_mode=False,
+                model_complexity=1,
+                smooth_landmarks=True,
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.5
+            )
         except Exception as e:
-            print(f"[ERROR] Failed to initialize PoseLandmarker from '{model_path}': {e}")
-            self._landmarker = None
+            print(f"[WARNING] Failed to init legacy pose fallback: {e}")
+            self._legacy_pose = None
 
         self._detectors = {
             "Squats": SquatDetector(),
@@ -76,21 +92,25 @@ class VideoProcessorClass(VideoProcessorBase):
             p1 = landmarks[start_idx]
             p2 = landmarks[end_idx]
 
-            if p1.visibility > 0.7 and p2.visibility > 0.7:
+            vis1 = getattr(p1, 'visibility', 1.0)
+            vis2 = getattr(p2, 'visibility', 1.0)
+
+            if vis1 > 0.35 and vis2 > 0.35:
                 cv2.line(
                     img,
                     (int(p1.x * w), int(p1.y * h)),
                     (int(p2.x * w), int(p2.y * h)),
                     (0, 255, 0),
-                    8
+                    6
                 )
         
         for lm in landmarks:
-            if lm.visibility > 0.7:
+            vis = getattr(lm, 'visibility', 1.0)
+            if vis > 0.35:
                 cv2.circle(
                     img, 
                     (int(lm.x * w), int(lm.y * h)),
-                    8,
+                    6,
                     (255, 0, 0),
                     -1
                 )
@@ -210,11 +230,25 @@ class VideoProcessorClass(VideoProcessorBase):
             )
 
             self._frame_timestamps_ms += 33
-            result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms) if self._landmarker else None
+            landmarks = None
 
-            if result and result.pose_landmarks and len(result.pose_landmarks) > 0:
-                landmarks = result.pose_landmarks[0]
+            if self._landmarker:
+                try:
+                    result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
+                    if result and result.pose_landmarks and len(result.pose_landmarks) > 0:
+                        landmarks = result.pose_landmarks[0]
+                except Exception as ex:
+                    print(f"[WARNING] Tasks landmarker detection exception: {ex}")
 
+            if landmarks is None and self._legacy_pose:
+                try:
+                    results = self._legacy_pose.process(rgb_image)
+                    if results and results.pose_landmarks and results.pose_landmarks.landmark:
+                        landmarks = results.pose_landmarks.landmark
+                except Exception as ex:
+                    print(f"[WARNING] Legacy pose detection exception: {ex}")
+
+            if landmarks:
                 self._draw_skeleton(image, landmarks)
 
                 ex_type = self.get_exercise()

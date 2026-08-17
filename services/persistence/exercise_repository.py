@@ -11,6 +11,11 @@ _DB_PATH = str(Path(__file__).parent.parent.parent / "data.db")
 def _get_connection() -> sqlite3.Connection:
     conn = sqlite3.connect(_DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA journal_mode=WAL;")
+        conn.execute("PRAGMA busy_timeout=5000;")
+    except Exception:
+        pass
     return conn
 
 
@@ -50,13 +55,17 @@ def init_db() -> None:
             )
             """
         )
+        conn.commit()
 
 
 def get_user(username: str) -> sqlite3.Row:
+    if not username:
+        return None
+    username = username.strip().lower()
     conn = _get_connection()
 
     return conn.execute(
-        "SELECT * FROM users WHERE username = ?", (username,)
+        "SELECT * FROM users WHERE LOWER(username) = LOWER(?)", (username,)
     ).fetchone()
 
 
@@ -81,6 +90,7 @@ def register_user(username: str, password: str):
             "INSERT INTO users (username, password_hash, salt) VALUES (?, ?, ?)",
             (username, pw_hash, salt)
         )
+        conn.commit()
 
     user = get_user(username)
     return user, None
