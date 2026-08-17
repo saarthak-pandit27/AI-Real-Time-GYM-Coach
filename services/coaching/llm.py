@@ -40,12 +40,20 @@ class LLMCoach:
                 {"role": "user", "content": prompt}
             ]
 
-            response = self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=messages,
-                temperature=0.4,
-                timeout=5.0
-            )
+            try:
+                response = self.client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=messages,
+                    temperature=0.4,
+                    timeout=5.0
+                )
+            except Exception:
+                response = self.client.chat.completions.create(
+                    model="llama-3.1-8b-instant",
+                    messages=messages,
+                    temperature=0.4,
+                    timeout=5.0
+                )
 
             text = response.choices[0].message.content.strip()
             self.history.append({"role": "assistant", "content": text})

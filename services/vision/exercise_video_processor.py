@@ -3,6 +3,14 @@ import cv2
 import av
 import numpy as np
 import mediapipe as mp
+try:
+    import mediapipe.solutions.pose as mp_pose
+except Exception:
+    try:
+        from mediapipe.python.solutions import pose as mp_pose
+    except Exception:
+        mp_pose = None
+
 import threading
 from streamlit_webrtc import VideoProcessorBase
 from mediapipe.tasks import python
@@ -21,6 +29,7 @@ class VideoProcessorClass(VideoProcessorBase):
         self._latest_metrics = None
         self._exercise_type = "Squats"
         self._landmarker = None
+        self._legacy_pose = None
 
         from pathlib import Path
         model_path = str(Path(__file__).parent.parent.parent / "ml_models" / "pose_landmarker_full.task")
@@ -37,9 +46,9 @@ class VideoProcessorClass(VideoProcessorBase):
                 options = vision.PoseLandmarkerOptions(
                     base_options=base_option,
                     running_mode=vision.RunningMode.VIDEO,
-                    min_pose_detection_confidence=0.5,
-                    min_pose_presence_confidence=0.5,
-                    min_tracking_confidence=0.5,
+                    min_pose_detection_confidence=0.3,
+                    min_pose_presence_confidence=0.3,
+                    min_tracking_confidence=0.3,
                     output_segmentation_masks=False
                 )
                 self._landmarker = vision.PoseLandmarker.create_from_options(options)
@@ -47,17 +56,17 @@ class VideoProcessorClass(VideoProcessorBase):
                 print(f"[WARNING] Failed to load PoseLandmarker task buffer: {e}")
 
         # Legacy MediaPipe Pose fallback (100% reliable across all platforms)
-        try:
-            self._legacy_pose = mp.solutions.pose.Pose(
-                static_image_mode=False,
-                model_complexity=1,
-                smooth_landmarks=True,
-                min_detection_confidence=0.5,
-                min_tracking_confidence=0.5
-            )
-        except Exception as e:
-            print(f"[WARNING] Failed to init legacy pose fallback: {e}")
-            self._legacy_pose = None
+        if mp_pose:
+            try:
+                self._legacy_pose = mp_pose.Pose(
+                    static_image_mode=False,
+                    model_complexity=1,
+                    smooth_landmarks=True,
+                    min_detection_confidence=0.3,
+                    min_tracking_confidence=0.3
+                )
+            except Exception as e:
+                print(f"[WARNING] Failed to init legacy pose fallback: {e}")
 
         self._detectors = {
             "Squats": SquatDetector(),
