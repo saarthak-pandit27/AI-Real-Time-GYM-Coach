@@ -13,8 +13,14 @@ except Exception:
 
 import threading
 from streamlit_webrtc import VideoProcessorBase
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
+
+try:
+    from mediapipe.tasks import python
+    from mediapipe.tasks.python import vision
+except Exception:
+    python = None
+    vision = None
+
 from detectors.squat import SquatDetector
 from detectors.pushup import PushUpDetector
 from detectors.biceps_curl import BicepsCurlDetector
@@ -37,15 +43,19 @@ class VideoProcessorClass(VideoProcessorBase):
             model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
 
         # Attempt loading Tasks PoseLandmarker
-        if os.path.exists(model_path):
+        if python and vision and os.path.exists(model_path):
             try:
                 with open(model_path, "rb") as f:
                     model_bytes = f.read()
 
-                base_option = python.BaseOptions(
-                    model_asset_buffer=model_bytes,
-                    delegate=python.BaseOptions.Delegate.CPU
-                )
+                try:
+                    base_option = python.BaseOptions(
+                        model_asset_buffer=model_bytes,
+                        delegate=python.BaseOptions.Delegate.CPU
+                    )
+                except Exception:
+                    base_option = python.BaseOptions(model_asset_buffer=model_bytes)
+
                 options = vision.PoseLandmarkerOptions(
                     base_options=base_option,
                     running_mode=vision.RunningMode.VIDEO,
