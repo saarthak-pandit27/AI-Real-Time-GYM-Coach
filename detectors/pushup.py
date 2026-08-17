@@ -4,7 +4,7 @@ from core.base_exercise import BaseExercise
 class PushUpDetector(BaseExercise):
     DOWN_THRESHOLD = 90
     UP_THRESHOLD = 160
-    MIN_VISIBILITY = 0.7
+    MIN_VISIBILITY = 0.25
     HIP_SAG_TOLERANCE = 0.08
 
     LEFT_SHOULDER = 11
@@ -26,8 +26,8 @@ class PushUpDetector(BaseExercise):
         self.stage = None
 
     def process(self, landmarks) -> dict:
-        left_vis = landmarks[self.LEFT_ELBOW].visibility
-        right_vis = landmarks[self.RIGHT_ELBOW].visibility
+        left_vis = self.get_vis(landmarks, self.LEFT_ELBOW)
+        right_vis = self.get_vis(landmarks, self.RIGHT_ELBOW)
 
         if left_vis >= right_vis:
             shoulder_idx = self.LEFT_SHOULDER
@@ -61,7 +61,7 @@ class PushUpDetector(BaseExercise):
         expected_hip_y = (shoulder_y + ankle_y) / 2
         hip_deviation = hip_y - expected_hip_y
 
-        key_landmarks_visible = landmarks[shoulder_idx].visibility > self.MIN_VISIBILITY and landmarks[elbow_idx].visibility > self.MIN_VISIBILITY and landmarks[wrist_idx].visibility > self.MIN_VISIBILITY and landmarks[hip_idx].visibility > self.MIN_VISIBILITY
+        key_landmarks_visible = self.get_vis(landmarks, shoulder_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, elbow_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, wrist_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, hip_idx) > self.MIN_VISIBILITY
         
         if key_landmarks_visible:
             if elbow_angle < self.DOWN_THRESHOLD:

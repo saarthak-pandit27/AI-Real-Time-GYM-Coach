@@ -4,7 +4,7 @@ from core.base_exercise import BaseExercise
 class LungesDetector(BaseExercise):
     DOWN_THRESHOLD = 100
     UP_THRESHOLD = 160
-    MIN_VISIBILITY = 0.7
+    MIN_VISIBILITY = 0.25
     BALANCE_TOLERANCE = 0.10
 
     LEFT_HIP = 23
@@ -49,7 +49,7 @@ class LungesDetector(BaseExercise):
             front_ankle_idx = self.RIGHT_ANKLE
             shoulder_idx_for_torso = self.RIGHT_SHOULDER
 
-        key_landmarks_visible = landmarks[front_hip_idx].visibility > self.MIN_VISIBILITY and landmarks[front_knee_idx].visibility > self.MIN_VISIBILITY and landmarks[front_ankle_idx].visibility > self.MIN_VISIBILITY
+        key_landmarks_visible = self.get_vis(landmarks, front_hip_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, front_knee_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, front_ankle_idx) > self.MIN_VISIBILITY
 
         if key_landmarks_visible:
             if front_knee_angle < self.DOWN_THRESHOLD:

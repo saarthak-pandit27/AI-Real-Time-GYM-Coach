@@ -28,6 +28,16 @@ class BaseExercise(ABC):
 
         return (p.x, p.y)
 
+    def get_vis(self, landmarks, idx):
+        try:
+            p = landmarks[idx]
+            v = getattr(p, 'visibility', 0.5)
+            if v is None:
+                return 0.5
+            return float(v)
+        except Exception:
+            return 0.5
+
     @abstractmethod
     def process(self, landmarks):
         pass
