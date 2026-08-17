@@ -21,7 +21,11 @@ class VideoProcessorClass(VideoProcessorBase):
         self._latest_metrics = None
         self._exercise_type = "Squats"
 
-        model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
+        from pathlib import Path
+        model_path = str(Path(__file__).parent.parent.parent / "ml_models" / "pose_landmarker_full.task")
+        if not os.path.exists(model_path):
+            model_path = os.path.join(os.getcwd(), "ml_models", "pose_landmarker_full.task")
+
         base_option = python.BaseOptions(model_asset_path=model_path)
 
         options = vision.PoseLandmarkerOptions(
@@ -33,7 +37,11 @@ class VideoProcessorClass(VideoProcessorBase):
             output_segmentation_masks=False
         )
 
-        self._landmarker = vision.PoseLandmarker.create_from_options(options)
+        try:
+            self._landmarker = vision.PoseLandmarker.create_from_options(options)
+        except Exception as e:
+            print(f"[ERROR] Failed to initialize PoseLandmarker from '{model_path}': {e}")
+            self._landmarker = None
 
         self._detectors = {
             "Squats": SquatDetector(),
@@ -200,9 +208,9 @@ class VideoProcessorClass(VideoProcessorBase):
         )
 
         self._frame_timestamps_ms += 30
-        result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms)
+        result = self._landmarker.detect_for_video(mp_image, self._frame_timestamps_ms) if self._landmarker else None
 
-        if result.pose_landmarks:
+        if result and result.pose_landmarks:
             landmarks = result.pose_landmarks[0]
 
             self._draw_skeleton(image, landmarks)
