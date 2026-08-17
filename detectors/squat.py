@@ -54,12 +54,12 @@ class SquatDetector(BaseExercise):
         key_landmark_visible = self.get_vis(landmarks, hip_idx) >= self.MIN_VISIBILITY and self.get_vis(landmarks, knee_idx) >= self.MIN_VISIBILITY and self.get_vis(landmarks, ankle_idx) >= self.MIN_VISIBILITY
 
         if key_landmark_visible:
-            if knee_angle < self.DOWN_THRESHOLD:
-                self.stage = "down"
-
-            if knee_angle >= self.UP_THRESHOLD and self.stage == "down":
+            if knee_angle >= self.UP_THRESHOLD:
+                if self.stage == "down":
+                    self.reps += 1
                 self.stage = "up"
-                self.reps += 1
+            elif knee_angle <= self.DOWN_THRESHOLD:
+                self.stage = "down"
 
         if self.stage == "down":
             depth_status = "GOOD DEPTH" if knee_angle <= self.DOWN_THRESHOLD else "TOO HIGH"

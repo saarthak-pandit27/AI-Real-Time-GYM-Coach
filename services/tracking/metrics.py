@@ -12,6 +12,10 @@ def sync_metrics_update(context):
 
     if not processor:
         return 
+
+    if st.session_state.get("reset_requested"):
+        processor.reset_detectors()
+        st.session_state.reset_requested = False
     
     exercise = st.session_state.get("exercise_type")
 

@@ -49,12 +49,12 @@ class BicepsCurlDetector(BaseExercise):
         key_landmarks_visible = self.get_vis(landmarks, shoulder_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, elbow_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, wrist_idx) > self.MIN_VISIBILITY
 
         if key_landmarks_visible:
-            if elbow_angle < self.UP_THRESHOLD:
-                self.stage = "up"
-
-            if elbow_angle > self.DOWN_THRESHOLD and self.stage == "up":
+            if elbow_angle >= self.DOWN_THRESHOLD:
+                if self.stage == "up":
+                    self.reps += 1
                 self.stage = "down"
-                self.reps += 1
+            elif elbow_angle <= self.UP_THRESHOLD:
+                self.stage = "up"
 
         shoulder_x = landmarks[shoulder_idx].x
         elbow_x = landmarks[elbow_idx].x

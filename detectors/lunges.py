@@ -52,12 +52,12 @@ class LungesDetector(BaseExercise):
         key_landmarks_visible = self.get_vis(landmarks, front_hip_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, front_knee_idx) > self.MIN_VISIBILITY and self.get_vis(landmarks, front_ankle_idx) > self.MIN_VISIBILITY
 
         if key_landmarks_visible:
-            if front_knee_angle < self.DOWN_THRESHOLD:
-                self.stage = "down"
-
-            if front_knee_angle > self.UP_THRESHOLD and self.stage == "down":
+            if front_knee_angle >= self.UP_THRESHOLD:
+                if self.stage == "down":
+                    self.reps += 1
                 self.stage = "up"
-                self.reps += 1
+            elif front_knee_angle <= self.DOWN_THRESHOLD:
+                self.stage = "down"
 
         torso_angle = self.calculate_angle(
             self.get_point(landmarks, shoulder_idx_for_torso),

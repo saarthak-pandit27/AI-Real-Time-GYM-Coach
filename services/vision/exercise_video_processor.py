@@ -86,9 +86,19 @@ class VideoProcessorClass(VideoProcessorBase):
         with self._lock:
             return None if self._latest_metrics is None else self._latest_metrics.copy()
         
+    def reset_detectors(self):
+        with self._lock:
+            self._latest_metrics = None
+            for detector in self._detectors.values():
+                detector.reset()
+
     def set_exercise(self, exercise_type):
         with self._lock:
-            self._exercise_type = exercise_type
+            if self._exercise_type != exercise_type:
+                self._exercise_type = exercise_type
+                detector = self._detectors.get(exercise_type)
+                if detector:
+                    detector.reset()
 
     def get_exercise(self):
         with self._lock:
