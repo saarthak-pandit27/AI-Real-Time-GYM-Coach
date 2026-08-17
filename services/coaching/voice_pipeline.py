@@ -103,23 +103,22 @@ def autoplay_audio(audio_bytes, text_fallback=None):
     # Fallback to browser Web Speech API JS if audio_bytes is absent or failed
     if text_fallback:
         escaped_text = json.dumps(text_fallback)
-        html_code = f"""
-            <iframe srcdoc="
-            &lt;script&gt;
+        st.markdown(
+            f"""
+            <script>
             (function() {{
                 try {{
-                    if ('speechSynthesis' in window.parent) {{
-                        window.parent.speechSynthesis.cancel();
-                        const utterance = new window.parent.SpeechSynthesisUtterance({escaped_text});
+                    if ('speechSynthesis' in window) {{
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance({escaped_text});
                         utterance.rate = 1.0;
                         utterance.pitch = 1.0;
                         utterance.volume = 1.0;
-                        window.parent.speechSynthesis.speak(utterance);
+                        window.speechSynthesis.speak(utterance);
                     }}
-                }} catch (err) {{
-                    console.warn('Web speech synthesis failed:', err);
-                }}
+                }} catch (err) {{}}
             }})();
-            &lt;/script&gt;" style="display:none; width:0; height:0; border:none;"></iframe>
-        """
-        st.markdown(html_code, unsafe_allow_html=True)
+            </script>
+            """,
+            unsafe_allow_html=True,
+        )
