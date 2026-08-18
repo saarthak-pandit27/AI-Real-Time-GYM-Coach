@@ -90,6 +90,9 @@ class VoicePipeline:
             return None, fallback_text
 
 
+import streamlit.components.v1 as components
+
+
 def autoplay_audio(audio_bytes, text_fallback=None):
     """Play audio bytes or use Web Speech API fallback."""
     if audio_bytes:
@@ -103,7 +106,7 @@ def autoplay_audio(audio_bytes, text_fallback=None):
     # Fallback to browser Web Speech API JS if audio_bytes is absent or failed
     if text_fallback:
         escaped_text = json.dumps(text_fallback)
-        st.markdown(
+        components.html(
             f"""
             <script>
             (function() {{
@@ -120,5 +123,6 @@ def autoplay_audio(audio_bytes, text_fallback=None):
             }})();
             </script>
             """,
-            unsafe_allow_html=True,
+            height=0,
+            width=0,
         )

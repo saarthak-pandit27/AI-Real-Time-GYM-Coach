@@ -31,7 +31,65 @@ def inject_local_font(font_path, font_name):
         </style>
     """, unsafe_allow_html=True)
 
+import streamlit.components.v1 as components
+
+
+def suppress_injected_script_text():
+    """Injects JS DOM MutationObserver into parent document to catch and hide any third-party injected script text."""
+    components.html(
+        """
+        <script>
+        (function() {
+            try {
+                const targetDoc = window.parent ? window.parent.document : document;
+                
+                if (window.parent) {
+                    if (typeof window.parent.findAndPatch === 'undefined') {
+                        window.parent.findAndPatch = function() {};
+                    }
+                    if (typeof window.parent.injectIntoIframe === 'undefined') {
+                        window.parent.injectIntoIframe = function() {};
+                    }
+                }
+
+                function purgeScriptText() {
+                    try {
+                        const walker = targetDoc.createTreeWalker(
+                            targetDoc.body || targetDoc.documentElement,
+                            NodeFilter.SHOW_TEXT,
+                            null,
+                            false
+                        );
+                        let node;
+                        while (node = walker.nextNode()) {
+                            if (node.nodeValue && (node.nodeValue.includes('findAndPatch') || node.nodeValue.includes('injectIntoIframe'))) {
+                                node.nodeValue = '';
+                                if (node.parentElement && node.parentElement.tagName !== 'BODY' && node.parentElement.tagName !== 'HTML') {
+                                    node.parentElement.style.display = 'none';
+                                }
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                purgeScriptText();
+                const observer = new MutationObserver(purgeScriptText);
+                observer.observe(targetDoc.documentElement || targetDoc.body, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
+            } catch(err) {}
+        })();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
 def inject_webrtc_styles():
+    suppress_injected_script_text()
     font_path = os.path.join(os.getcwd(), "static", "AdobeClean.otf")
     
     if not os.path.exists(font_path):
